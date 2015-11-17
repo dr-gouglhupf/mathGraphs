@@ -4,7 +4,7 @@
 
 ## Documentation
 
-A Documentation is not available yet. I am working on it and hope to publish it out soon.
+A Documentation is not available yet. I am working on it and hope to publish it soon.
 
 ## Bugs, issues and contributing
 
