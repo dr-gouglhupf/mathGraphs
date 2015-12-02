@@ -1,6 +1,6 @@
 # mathGraths
 
-*Displays mathematic inside an HTML5 Canvas*
+*Displays mathematic functions inside an HTML5 Canvas*
 
 ## Documentation
 
