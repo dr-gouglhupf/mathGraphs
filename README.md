@@ -1,4 +1,4 @@
-# mathGraths
+# mathGraphs
 
 *Displays mathematic functions inside an HTML5 Canvas*
 
