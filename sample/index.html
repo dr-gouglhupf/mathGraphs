@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>Draw a Mathe Function</title>
+
 <!-- math.js is required -->
 <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.4.1/math.min.js"></script>
 
@@ -12,14 +13,14 @@
 <body>
 <canvas id="canvas" width="800" height="600"></canvas>
 <script type="text/javascript">
+
 // First make a new instance
-grath1 = new graph(document.getElementById("canvas").getContext("2d"), {});
+var graph1 = new graph(document.getElementById("canvas").getContext("2d"), {});
 
 // Draw some new functions form scratch
-grath1.drawGraphs(["x^2","2*x"]);
+graph1.drawGraphs(["x^2","2*x"]);
 
 // Add some new ones to the canvas
-grath1.addGraphs(["x^2+3*x-6","-(1/2)*x","x"]);
+graph1.addGraphs(["x^2+3*x-6","-(1/2)*x","x"]);
 </script>
 </body>
-</html>
