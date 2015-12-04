@@ -1,14 +1,14 @@
 /*!
- * mathGraths
- * https://github.com/dr-gouglhupf/mathGraths/
- * Version: 0.2-alpha
+ * mathGraphs
+ * https://github.com/dr-gouglhupf/mathGraphs/
+ * Version: 0.1-alpha
  *
  * Copyright 2015 Justus Leiner
  * Released under the MIT license
- * https://github.com/dr-gouglhupf/mathGraths/blob/master/LICENSE.md
+ * https://github.com/dr-gouglhupf/mathGraphs/blob/master/LICENSE.md
  */
 
-var grath = function (context, settings){
+var graph = function (context, settings){
 	"use strict";
 
 	// Default global config which can be modivied with the 'settings' parameter
@@ -170,10 +170,6 @@ var grath = function (context, settings){
 	this.canvasHeight = this.canvas.height = this.options.size.height();
 
 
-
-	// In this variable every function will be stored here that can be accessed out side of the main function 
-	var exports = {};
-
 	this.drawGrid = function() {
 		// First reset the canvas
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); 
@@ -300,7 +296,7 @@ var grath = function (context, settings){
 		}
 	}
 
-	// This is the heart of the script. It calculates a grath and saves the points the an array which is then returned
+	// This is the heart of the script. It calculates a graph and saves the points the an array which is then returned
 	this.funGraph = function (funcStr, color) {
 		var xx, yy, xN, yN, previous = {x: 0, y: 0}, dx=4, points=[], 
 			middleX = this.middleX, 
@@ -308,15 +304,6 @@ var grath = function (context, settings){
 			iMax = Math.round((this.canvasWidth-middleX)/dx),
 			iMin = Math.round(-middleX/dx),
 			func = math.compile(funcStr);
-
-		// <Test reason="enhanced hover-recognition using math">
-		/*var a = 2, b = 4, x = 0, 
-			distance = Math.sqrt(Math.pow(x-a,2)+Math.pow(func.eval({x: x})-b,2));
-
-		console.log(funcStr);
-		console.log(x);
-		console.log(distance);*/
-		// </Test>
 
 		this.ctx.beginPath();
 		this.ctx.lineWidth = 2;
@@ -347,26 +334,26 @@ var grath = function (context, settings){
 	}
 
 	// This function initializes a complete new canvas-space with given functions
-	exports.drawGraths = this.drawGraths = function (grathFuncs) {
+	this.drawGraphs = function (graphFuncs) {
 		this.drawGrid();
 
 		this.functions = [];
 
-		var grathReturn;
+		var graphReturn;
 
-		for(var i = 0; i < grathFuncs.length; i++) {
-			this.functions.push({formula: grathFuncs[i]});
+		for(var i = 0; i < graphFuncs.length; i++) {
+			this.functions.push({formula: graphFuncs[i]});
 			try {
 				if (this.options.randomColors) {
 					this.functions[i].color = this.options.colors[Math.round(helpers.getRandomArbitrary(0, this.options.colors.length-1))];
-					grathReturn = this.funGraph(grathFuncs[i],this.functions[i].color);
-					this.functions[i].points = grathReturn.points;
-					this.functions[i].compiled = grathReturn.compFunction;
+					graphReturn = this.funGraph(graphFuncs[i],this.functions[i].color);
+					this.functions[i].points = graphReturn.points;
+					this.functions[i].compiled = graphReturn.compFunction;
 				} else {
 					this.functions[i].color = this.options.colors[i];
-					grathReturn = this.funGraph(grathFuncs[i],this.options.colors[i]);
-					this.functions[i].points = grathReturn.points;
-					this.functions[i].compiled = grathReturn.compFunction;
+					graphReturn = this.funGraph(graphFuncs[i],this.options.colors[i]);
+					this.functions[i].points = graphReturn.points;
+					this.functions[i].compiled = graphReturn.compFunction;
 				}
 			} catch (e) {
 				if (typeof this.errorElem !== "undefined") {
@@ -379,30 +366,30 @@ var grath = function (context, settings){
 	}
 
 	// This adds given functions to the canvas-space without removing the old ones
-	exports.addGraths = this.addGraths = function (grathFuncs) {
+	this.addGraphs = function (graphFuncs) {
 		if(!this.initialized) {
 			this.drawGrid();
 		}
 
-		var grathReturn,
+		var graphReturn,
 			prevLenght = this.functions.length;
 
-		for (var i = 0; i < grathFuncs.length; i++) {
-			this.functions.push({formula: grathFuncs[i]});
+		for (var i = 0; i < graphFuncs.length; i++) {
+			this.functions.push({formula: graphFuncs[i]});
 		}
 
-		for (var i = 0; i < grathFuncs.length; i++) {
+		for (var i = 0; i < graphFuncs.length; i++) {
 			try {
 				if (this.options.randomColors) {
 					this.functions[i+prevLenght].color = this.options.colors[Math.round(helpers.getRandomArbitrary(0, this.options.colors.length-1))];
-					grathReturn = this.funGraph(grathFuncs[i], this.functions[i+prevLenght].color);
-					this.functions[i+prevLenght].points = grathReturn.points;
-					this.functions[i+prevLenght].compiled = grathReturn.compFunction;
+					graphReturn = this.funGraph(graphFuncs[i], this.functions[i+prevLenght].color);
+					this.functions[i+prevLenght].points = graphReturn.points;
+					this.functions[i+prevLenght].compiled = graphReturn.compFunction;
 				} else {
 					this.functions[i+prevLenght].color = this.options.colors[i+prevLenght];
-					grathReturn = this.funGraph(grathFuncs[i],this.options.colors[i+prevLenght]);
-					this.functions[i+prevLenght].points = grathReturn.points;
-					this.functions[i+prevLenght].compiled = grathReturn.compFunction;
+					graphReturn = this.funGraph(graphFuncs[i],this.options.colors[i+prevLenght]);
+					this.functions[i+prevLenght].points = graphReturn.points;
+					this.functions[i+prevLenght].compiled = graphReturn.compFunction;
 				}
 			} catch (e) {
 				if (typeof this.errorElem !== "undefined") {
@@ -462,7 +449,7 @@ var grath = function (context, settings){
 	}
 
 	// Updates the canvas by using the calculated points
-	this.updateGraths = function () {
+	this.updateGraphs = function () {
 		this.drawGrid();
 
 		for(var i = 0; i < this.functions.length; i++) {
@@ -498,7 +485,7 @@ var grath = function (context, settings){
 						y: function (r) {return Math.round10(((pointY-parent.middleY-parent.offset.y)/parent.unitsGapY)*-1,r*-1)},
 						formula: this.functions[i].formula
 					}
-					this.updateGraths();
+					this.updateGraphs();
 
 					this.ctx.restore();
 
@@ -538,7 +525,7 @@ var grath = function (context, settings){
 					return;
 				} else {
 					if (this.hoverMenu) {
-						this.updateGraths();
+						this.updateGraphs();
 						this.hoverMenu = false;
 					}
 				}
@@ -555,7 +542,7 @@ var grath = function (context, settings){
 			this.offset.y = parseInt(mouseState.mouseY - (e.clientY-this.canvas.offsetTop));
 		}
 
-		this.updateGraths();
+		this.updateGraphs();
 
 		this.addMissingPoints();
 	}
@@ -575,27 +562,27 @@ var grath = function (context, settings){
 
 		this.drawGrid();
 
-		var grathReturn;
+		var graphReturn;
 
 		for(var i = 0; i < this.functions.length; i++) {
-			grathReturn = this.funGraph(this.functions[i].formula, this.functions[i].color);
-			this.functions[i].points = grathReturn.points;
-			this.functions[i].compiled = grathReturn.compFunction;
+			graphReturn = this.funGraph(this.functions[i].formula, this.functions[i].color);
+			this.functions[i].points = graphReturn.points;
+			this.functions[i].compiled = graphReturn.compFunction;
 		}
 
 		this.addMissingPoints();
 	}
 
 	// This is called then the window resizes
-	this.resizeGraths = function () {
+	this.resizeGraphs = function () {
 		this.drawGrid();
 
-		var grathReturn;
+		var graphReturn;
 
 		for(var i = 0; i < this.functions.length; i++) {
-			grathReturn = this.funGraph(this.functions[i].formula, this.functions[i].color);
-			this.functions[i].points = grathReturn.points;
-			this.functions[i].compiled = grathReturn.compFunction;
+			graphReturn = this.funGraph(this.functions[i].formula, this.functions[i].color);
+			this.functions[i].points = graphReturn.points;
+			this.functions[i].compiled = graphReturn.compFunction;
 		}
 		
 		this.addMissingPoints();
@@ -659,11 +646,11 @@ var grath = function (context, settings){
 				doingResize = true;
 				parent.canvasWidth = parent.canvas.width  = parent.options.size.width();
 				parent.canvasHeight = parent.canvas.height = parent.options.size.height();
-				parent.resizeGraths();
+				parent.resizeGraphs();
 				doingResize = false;
 			}
 		}
 	}
 
-	return exports;
+	return this;
 };
