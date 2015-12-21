@@ -36,7 +36,7 @@ var graph = function (context, settings){
 			referenceLines: true,
 			text: true
 		},
-		toopTips: {
+		toolTips: {
 			enable: true,
 			roundEdges: true,
 			width: 140,
@@ -164,11 +164,15 @@ var graph = function (context, settings){
 	this.zoom = 0;
 
 	this.options = helpers.merge(defaultConfig, settings);
-	this.functionsComp = helpers.complileTemplate(this.options.toopTips.template);
+	this.functionsComp = helpers.complileTemplate(this.options.toolTips.template);
 
 	this.canvasWidth = this.canvas.width  = this.options.size.width();
 	this.canvasHeight = this.canvas.height = this.options.size.height();
 
+	this.dynamicZoom = (this.options.gridSettings.range.xM*-1+this.options.gridSettings.range.xP+1 == 
+						this.options.gridSettings.range.yM*-1+this.options.gridSettings.range.yP+1);
+
+	if(!this.dynamicZoom) console.warn("Dynamic zoom was turned off due to the fact that the scale is stretched!");
 
 	this.drawGrid = function() {
 		// First reset the canvas
@@ -185,16 +189,17 @@ var graph = function (context, settings){
 			},
 			unitsX = range.xM*-1+range.xP+1,
 			unitsY = range.yM*-1+range.yP+1,
-			unitsGapX = (canvasWidth) / unitsX,
-			unitsGapY = (canvasHeight) / unitsY,
-			middleX = (unitsGapX * (range.xM*-1+1)) - unitsGapX/2,
-			middleY = canvasHeight - ((unitsGapY * (range.yM*-1+1)) - unitsGapY/2),
+			unitsGapX = canvasWidth / unitsX,
+			unitsGapY = canvasHeight / unitsY,
+			middleX = canvasWidth/2,
+			middleY = canvasHeight/2,
 			offsetX = this.offset.x/unitsGapX,
 			offsetY = this.offset.y*-1/unitsGapY,
 			titlePosX = (this.offset.x > canvasWidth/2) ? 0 : (this.offset.x*-1 > canvasWidth/2) ? canvasWidth : middleX-this.offset.x,
 			titlePosY = (this.offset.y > canvasHeight/2) ? 0 : (this.offset.y*-1 > canvasHeight/2) ? canvasHeight : middleY-this.offset.y,
-			textOffsetX = (this.offset.x*-1+20 > canvasWidth/2) ? -10 : 10,
-			textOffsetY = (this.offset.y+20 < canvasHeight/2) ? -10 : 20;
+			increment = 1;
+
+		if (this.dynamicZoom) increment = this.getIncrement(unitsX);
 
 		// Saves default and restores them if already initialized
 
@@ -203,6 +208,24 @@ var graph = function (context, settings){
 		this.ctx.save();
 
 		// Draws middel line if they should be on the canvas
+
+
+		// Draws reference lines
+
+		if (this.options.gridSettings.referenceLines) {
+			for (var i = (this.offset.x > middleX) ? Math.floor(offsetX-range.xP) : increment; i <= range.xP+Math.floor(offsetX+0.5); i += increment) {
+				this.drawRefLinieX(unitsGapX*i+middleX-this.offset.x);
+			};
+			for (var i = (this.offset.y*-1 > middleY) ? Math.floor(offsetY-range.yP) : increment; i <= range.yP+Math.floor(offsetY+0.5); i += increment) {
+				this.drawRefLinieY(canvasHeight-(unitsGapY*i+middleY+this.offset.y));
+			};
+			for (var i = (this.offset.x*-1 > middleX) ? Math.ceil(offsetX-range.xM) : increment*-1; i >= range.xM+Math.floor(offsetX); i -= increment) {
+				this.drawRefLinieX(unitsGapX*i+middleX-this.offset.x);
+			};
+			for (var i = (this.offset.y > middleY) ? Math.ceil(offsetY-range.yM) : increment*-1; i >= range.yM+Math.floor(offsetY); i -= increment) {
+				this.drawRefLinieY(canvasHeight-(unitsGapY*i+middleY+this.offset.y));
+			};
+		}
 
 		this.ctx.lineWidth = 2;
 		this.ctx.strokeStyle = "#7f8c8d";
@@ -219,40 +242,19 @@ var graph = function (context, settings){
 			this.ctx.stroke();
 		}
 
-		// Draws reference lines
-
-		if (this.options.gridSettings.referenceLines) {
-			for (var i = Math.floor(offsetX); i < unitsX+Math.floor(offsetX+0.5); i++) {
-				var posX = unitsGapX*i+unitsGapX/2-this.offset.x;
-				if (i+range.xM != 0) {
-					this.ctx.lineWidth = 2;
-					this.ctx.strokeStyle = this.options.gridSettings.colors.axes;
-					this.ctx.beginPath();
-					this.ctx.moveTo(posX, 0);
-					this.ctx.lineTo(posX, this.canvasHeight);
-					this.ctx.stroke();
-				};
-			};
-			for (var i = Math.floor(offsetY); i < unitsY+Math.floor(offsetY+0.5); i++) {
-				var posY = canvasHeight - (unitsGapY*i+unitsGapY/2)-this.offset.y;
-				if (i+range.yM != 0) {
-					this.ctx.lineWidth = 2;
-					this.ctx.strokeStyle = this.options.gridSettings.colors.axes;
-					this.ctx.beginPath();
-					this.ctx.moveTo(0, posY);
-					this.ctx.lineTo(this.canvasWidth, posY);
-					this.ctx.stroke();
-				};
-			};
-		}
-
 		// Draws the text for the units
 
-		for (var i = Math.floor(offsetX); i < unitsX+Math.floor(offsetX+0.5); i++) {
-			if (i+range.xM != 0) this.drawUnitX(unitsGapX*i+unitsGapX/2-this.offset.x, titlePosY, i+range.xM, textOffsetY);
+		for (var i = (this.offset.x > middleX) ? Math.floor(offsetX-range.xP) : increment; i <= range.xP+Math.floor(offsetX+0.5); i += increment) {
+			this.drawUnitX(unitsGapX*i+middleX-this.offset.x, titlePosY, i, (this.offset.y+20 < canvasHeight/2) ? -10 : 20);
 		};
-		for (var i = Math.floor(offsetY); i < unitsY+Math.floor(offsetY+0.5); i++) {
-			if (i+range.yM != 0) this.drawUnitY(titlePosX,canvasHeight - (unitsGapY*i+unitsGapY/2)-this.offset.y, i+range.yM, textOffsetX);
+		for (var i = (this.offset.y*-1 > middleY) ? Math.floor(offsetY-range.yP) : increment; i <= range.yP+Math.floor(offsetY+0.5); i += increment) {
+			this.drawUnitY(titlePosX,canvasHeight-(unitsGapY*i+middleY+this.offset.y), i, (this.offset.x*-1+20 > canvasWidth/2) ? -10 : 10);
+		};
+		for (var i = (this.offset.x*-1 > middleX) ? Math.ceil(offsetX-range.xM) : increment*-1; i >= range.xM+Math.floor(offsetX); i -= increment) {
+			this.drawUnitX(unitsGapX*i+middleX-this.offset.x, titlePosY, i, (this.offset.y+20 < canvasHeight/2) ? -10 : 20);
+		};
+		for (var i = (this.offset.y > middleY) ? Math.ceil(offsetY-range.yM) : increment*-1; i >= range.yM+Math.floor(offsetY); i -= increment) {
+			this.drawUnitY(titlePosX,canvasHeight-(unitsGapY*i+middleY+this.offset.y), i, (this.offset.x*-1+20 > canvasWidth/2) ? -10 : 10);
 		};
 
 		// Makes a few variables public to the script
@@ -262,6 +264,31 @@ var graph = function (context, settings){
 		this.middleY = middleY;
 		this.unitsGapX = unitsGapX;
 		this.unitsGapY = unitsGapY;
+	}
+
+	this.getIncrement = function (units, increment) {
+		if (typeof increment === "undefined") var increment = 1;
+		if (units/increment > 35) increment = this.getIncrement(units, increment+1);
+
+		return increment;
+	}
+
+	this.drawRefLinieX = function (x) {
+		this.ctx.lineWidth = 2;
+		this.ctx.strokeStyle = this.options.gridSettings.colors.axes;
+		this.ctx.beginPath();
+		this.ctx.moveTo(x, 0);
+		this.ctx.lineTo(x, this.canvasHeight);
+		this.ctx.stroke();
+	}
+
+	this.drawRefLinieY = function (y) {
+		this.ctx.lineWidth = 2;
+		this.ctx.strokeStyle = this.options.gridSettings.colors.axes;
+		this.ctx.beginPath();
+		this.ctx.moveTo(0, y);
+		this.ctx.lineTo(this.canvasWidth, y);
+		this.ctx.stroke();
 	}
 
 	// Draws the background lines, the text for the units and the "small little" lines along the X-axis
@@ -481,8 +508,8 @@ var graph = function (context, settings){
 				if (mouseX-pointX < 12 && mouseX-pointX > -12 && (mouseY-pointY < 12 && mouseY-pointY > -12)) {
 					var parent = this,
 						dataset = {
-						x: function (r) {return Math.round10((pointX-parent.middleX-parent.offset.x)/parent.unitsGapX,r*-1)},
-						y: function (r) {return Math.round10(((pointY-parent.middleY-parent.offset.y)/parent.unitsGapY)*-1,r*-1)},
+						x: function (r) {return Math.round10((pointsAry[i2].x-parent.middleX)/parent.unitsGapX,r*-1)},
+						y: function (r) {return Math.round10((pointsAry[i2].y-parent.middleY)/parent.unitsGapY*-1,r*-1)},
 						formula: this.functions[i].formula
 					}
 					this.updateGraphs();
@@ -509,14 +536,14 @@ var graph = function (context, settings){
 					this.ctx.shadowColor="black";
 					this.ctx.fillStyle = this.functions[i].color;
 
-					if (this.options.toopTips.roundEdges) {
+					if (this.options.toolTips.roundEdges) {
 						this.ctx.roundRect(pointX, pointY, 150, this.functionsComp.length*35+5, 5, true, false);
 					} else {
 						this.ctx.fillRect(pointX, pointY, 150 , this.functionsComp.length*35+5);
 					}
 
 					this.ctx.shadowBlur=0;
-					this.ctx.fillStyle = this.options.toopTips.fontColor;
+					this.ctx.fillStyle = this.options.toolTips.fontColor;
 					this.ctx.font = "30px " + this.options.fontType;
 					for (var i3 = 0; i3 < this.functionsComp.length; i3++) {
 						this.ctx.fillText(this.functionsComp[i3](dataset), pointX+5, pointY+25+i3*35, 140);
@@ -552,7 +579,11 @@ var graph = function (context, settings){
 		// cross-browser wheel delta
 		var e = window.event || e; // old IE support
 
-		this.zoom += Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+		if (this.dynamicZoom) {
+			// TODO
+
+			this.zoom += Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+		} else this.zoom += Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
 
 		if (this.options.gridSettings.range.xM+this.zoom > -1 || this.options.gridSettings.range.xP-this.zoom < 1 ||
 			this.options.gridSettings.range.yM+this.zoom > -1 || this.options.gridSettings.range.yP-this.zoom < 1) {
@@ -595,13 +626,13 @@ var graph = function (context, settings){
 		isInterval = 0,
 		parent = this;
 		parent.mouseState = {};
-	if (this.options.toopTips.enable || this.options.moveEnable) {
+	if (this.options.toolTips.enable || this.options.moveEnable) {
 		this.canvas.addEventListener("mousemove", function (event) {
 			if (isInterval == 0 && !doingResize) {
 				if (parent.options.moveEnable && parent.mouseState.down) {
 					parent.updateOffset(event, parent.mouseState);
 				}
-				else if (parent.options.toopTips.enable) {
+				else if (parent.options.toolTips.enable) {
 					parent.updateHover(event);
 				}
 				isInterval += 1;
@@ -619,11 +650,14 @@ var graph = function (context, settings){
 				mouseX: parseInt(event.clientX-parent.canvas.offsetLeft) + parent.offset.x,
 				mouseY: parseInt(event.clientY-parent.canvas.offsetTop) + parent.offset.y
 			}
+			parent.canvas.style.cursor = "move";
 		});
 		this.canvas.addEventListener("mouseup", function () {
+			parent.canvas.style.cursor = "auto";
 			parent.mouseState.down = false;
 		});
 		this.canvas.addEventListener("mouseout", function () {
+			parent.canvas.style.cursor = "auto";
 			parent.mouseState.down = false;
 		});
 	}
@@ -632,11 +666,23 @@ var graph = function (context, settings){
 		// Firefox
 		this.canvas.addEventListener("DOMMouseScroll", function (event) {
 			parent.updateZoom(event);
+			event = event || window.event;
+			if (event.preventDefault)
+				event.preventDefault();
+			event.returnValue = false;
 		}, false);
 
 		// IE9, Chrome, Safari, Opera
 		this.canvas.addEventListener("mousewheel", function (event) {
 			parent.updateZoom(event);
+			event = event || window.event;
+			if (event.preventDefault)
+				event.preventDefault();
+			event.returnValue = false;
+		}, false);
+
+		this.canvas.addEventListener("mouseover", function () {
+			//parent.disableScroll();
 		}, false);
 	}
 
