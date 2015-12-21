@@ -1,6 +1,6 @@
 # mathGraphs
 
-*Displays mathematic functions inside an HTML5 Canvas*
+*Displays mathematic functions inside a HTML5 Canvas*
 
 ## Documentation
 
