@@ -1,11 +1,11 @@
 /*!
  * mathGraphs
- * https://github.com/dr-gouglhupf/mathGraphs/
+ * https://github.com/gouglhupf/mathGraphs/
  * Version: 0.1-alpha
  *
  * Copyright 2015 Justus Leiner
  * Released under the MIT license
- * https://github.com/dr-gouglhupf/mathGraphs/blob/master/LICENSE.md
+ * https://github.com/gouglhupf/mathGraphs/blob/master/LICENSE.md
  */
 
 var graph = function (context, settings){
